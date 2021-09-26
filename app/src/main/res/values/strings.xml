@@ -2,9 +2,15 @@
     <string name="app_name">Task List</string>
 
     <string name="screen_title_task_list">Task list</string>
+    <string name="screen_title_task">Task</string>
 
     <string name="label_no_title">No title</string>
     <string name="label_no_description">No description</string>
 
+    <string name="hint_title">Title</string>
+    <string name="hint_description">Description</string>
+
     <string name="content_description_add_task">Add task</string>
+
+    <string name="button_add_task">Add task</string>
 </resources>
