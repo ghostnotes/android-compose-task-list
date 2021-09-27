@@ -13,18 +13,27 @@ import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import co.ghostnotes.sample.compose.tasklist.R
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @ExperimentalCoroutinesApi
 @Composable
-fun Task(taskViewModel: TaskViewModel) {
+fun Task(
+    taskViewModel: TaskViewModel,
+    onTaskAdded: (() -> Unit)? = null
+) {
     val title: String by taskViewModel.title.collectAsState()
     val description: String by taskViewModel.description.collectAsState()
     val addTaskButtonEnabled by taskViewModel.addTaskButtonEnabled.collectAsState()
+
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -53,7 +62,17 @@ fun Task(taskViewModel: TaskViewModel) {
 
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { /* TODO add task */ },
+            onClick = {
+                Timber.d("### on Add task button clicked.")
+                coroutineScope.launch(Dispatchers.IO) {
+                    val result = taskViewModel.insertTask()
+
+                    when {
+                        result.isSuccess -> onTaskAdded?.invoke()
+                        result.isFailure -> {}
+                    }
+                }
+            },
             enabled = addTaskButtonEnabled
         ) {
             Text(

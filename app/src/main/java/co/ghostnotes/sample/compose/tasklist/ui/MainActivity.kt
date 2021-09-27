@@ -16,24 +16,32 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import co.ghostnotes.sample.compose.tasklist.R
+import co.ghostnotes.sample.compose.tasklist.di.MainDispatcher
 import co.ghostnotes.sample.compose.tasklist.ui.list.TaskList
 import co.ghostnotes.sample.compose.tasklist.ui.list.TaskListViewModel
 import co.ghostnotes.sample.compose.tasklist.ui.task.Task
 import co.ghostnotes.sample.compose.tasklist.ui.task.TaskViewModel
 import co.ghostnotes.sample.compose.tasklist.ui.theme.TaskListTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject @MainDispatcher lateinit var mainDispatcher: CoroutineDispatcher
 
     private val mainViewModel: MainViewModel by viewModels()
     private val taskListViewModel: TaskListViewModel by viewModels()
@@ -45,6 +53,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             Main(
+                mainDispatcher = mainDispatcher,
                 mainViewModel = mainViewModel,
                 taskListViewModel = taskListViewModel,
                 taskViewModel = taskViewModel,
@@ -56,6 +65,7 @@ class MainActivity : ComponentActivity() {
 @ExperimentalCoroutinesApi
 @Composable
 fun Main(
+    mainDispatcher: CoroutineDispatcher,
     mainViewModel: MainViewModel,
     taskListViewModel: TaskListViewModel,
     taskViewModel: TaskViewModel,
@@ -84,6 +94,7 @@ fun Main(
             },
         ) {
             MainContent(
+                mainDispatcher = mainDispatcher,
                 navController = navController,
                 mainViewModel = mainViewModel,
                 taskListViewModel = taskListViewModel,
@@ -96,6 +107,7 @@ fun Main(
 @ExperimentalCoroutinesApi
 @Composable
 fun MainContent(
+    mainDispatcher: CoroutineDispatcher,
     navController: NavHostController,
     mainViewModel: MainViewModel,
     taskListViewModel: TaskListViewModel,
@@ -107,6 +119,8 @@ fun MainContent(
     fun setFabVisible(visible: Boolean) {
         mainViewModel.setFabVisible(visible)
     }
+
+    val coroutineScope = rememberCoroutineScope()
 
     NavHost(navController, startDestination = Screen.TaskList.route) {
         composable(Screen.TaskList.route) {
@@ -121,7 +135,16 @@ fun MainContent(
             setAppBarTitle(stringResource(id = R.string.screen_title_task))
             setFabVisible(false)
 
-            Task(taskViewModel)
+            Task(taskViewModel = taskViewModel) {
+                Timber.d("### onSuccess()")
+                coroutineScope.launch(mainDispatcher) {
+                    navController.popBackStack(
+                        route = Screen.TaskList.route,
+                        inclusive = false,
+                        saveState = false
+                    )
+                }
+            }
         }
     }
 }

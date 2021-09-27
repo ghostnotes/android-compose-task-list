@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
+import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import co.ghostnotes.sample.compose.tasklist.data.dao.TaskDao
 import co.ghostnotes.sample.compose.tasklist.data.entity.TaskEntity
@@ -12,6 +13,7 @@ import co.ghostnotes.sample.compose.tasklist.domain.usecase.FindTasksUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.*
 import javax.inject.Inject
 
@@ -42,5 +44,4 @@ class TaskListViewModel @Inject constructor(
     val taskList = Pager(PagingConfig(pageSize = 20)) {
         findTasksUseCase(Unit)
     }.flow.cachedIn(viewModelScope)
-
 }
