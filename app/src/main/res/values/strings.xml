@@ -6,6 +6,7 @@
 
     <string name="label_no_title">No title</string>
     <string name="label_no_description">No description</string>
+    <string name="label_no_date">No date</string>
 
     <string name="hint_title">Title</string>
     <string name="hint_description">Description</string>
